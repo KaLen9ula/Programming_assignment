@@ -1,12 +1,15 @@
 package com.example.uakpicomsysio8101
 
 import android.os.Bundle
+import android.view.View
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.intrusoft.scatter.PieChart
+import com.jjoe64.graphview.GraphView
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,5 +23,17 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home, R.id.navigation_graphic))
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+    }
+    fun onChangeChartClick(view: View) {
+        val graph = findViewById<GraphView>(R.id.graph)
+        val pieChart = findViewById<PieChart>(R.id.pie_chart)
+
+        if (graph.visibility == View.GONE) {
+            graph.visibility = View.VISIBLE
+            pieChart.visibility = View.GONE
+        } else {
+            graph.visibility = View.GONE
+            pieChart.visibility = View.VISIBLE
+        }
     }
 }
