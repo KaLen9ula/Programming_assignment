@@ -16,4 +16,11 @@
         android:name="com.example.uakpicomsysio8101.ui.dashboard.GraphicFragment"
         android:label="@string/title_graphic"
         tools:layout="@layout/fragment_graphic" />
+
+    <fragment
+        android:id="@+id/navigation_book"
+        android:name="com.example.uakpicomsysio8101.ui.book.BookFragment"
+        android:label="@string/title_books"
+        tools:layout="@layout/fragment_book" />
+
 </navigation>

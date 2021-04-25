@@ -11,4 +11,9 @@
         android:icon="@drawable/twotone_analytics_24"
         android:title="@string/title_graphic" />
 
+    <item
+        android:id="@+id/navigation_book"
+        android:icon="@drawable/baseline_book_24"
+        android:title="@string/title_books" />
+
 </menu>
