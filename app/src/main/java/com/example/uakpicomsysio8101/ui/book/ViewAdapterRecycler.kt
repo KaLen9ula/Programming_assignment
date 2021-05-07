@@ -11,7 +11,8 @@ import com.example.uakpicomsysio8101.R
 
 class ViewAdapterRecycler(
         private val context: Context,
-        private val values: List<Book>
+        private var values: List<Book>,
+        private val listener: (Book) -> Unit
 ) : RecyclerView.Adapter<ViewAdapterRecycler.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewprice: Int): ViewHolder {
@@ -39,6 +40,7 @@ class ViewAdapterRecycler(
                     context.resources.getDrawable(android.R.color.transparent)
             )
         }
+        holder.itemView.setOnClickListener { listener(item) }
     }
 
     override fun getItemCount(): Int = values.size
@@ -49,5 +51,23 @@ class ViewAdapterRecycler(
         val subtitle: TextView = view.findViewById(R.id.subtitle)
         val price: TextView = view.findViewById(R.id.price)
         val image: ImageView = view.findViewById(R.id.image)
+    }
+    fun removeItem(position: Int) {
+        values.toMutableList().removeAt(position)
+        notifyItemRemoved(position)
+    }
+
+    fun restoreItem(item: Book, position: Int) {
+        values.toMutableList().add(position, item)
+        notifyItemInserted(position)
+    }
+
+    fun getData(): List<Book> {
+        return values
+    }
+
+    fun updateList(list: List<Book>) {
+        values = list
+        notifyDataSetChanged()
     }
 }
