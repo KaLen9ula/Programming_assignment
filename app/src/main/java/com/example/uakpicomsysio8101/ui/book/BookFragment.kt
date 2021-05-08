@@ -55,7 +55,9 @@ class BookFragment : Fragment() {
         initBook()
         initSearchField()
         val arr = bookContainer.search
+
         adapter = ViewAdapterRecycler(requireContext(), arr) { item ->
+            //  println("test"+ item)
             if (item.isbn13 != null && item.isbn13!!.isNotEmpty()) {
                 val id = getResId(item.isbn13!!, R.string::class.java)
                 val jsonText = requireContext().resources.getString(id)
@@ -70,6 +72,7 @@ class BookFragment : Fragment() {
         addButton.setOnClickListener { withEditText(addButton)
         }
     }
+
 
     fun withEditText(view: View) {
         val builder = AlertDialog.Builder(requireContext())
@@ -94,11 +97,15 @@ class BookFragment : Fragment() {
         builder.show()
     }
 
+
     private fun initBook() {
         val mapper = ObjectMapper()
         val jsonText = requireView().resources.getString(R.string.json_books)
+        //  val jsonText = requireView().resources.getString(R.string.json_book)
         bookContainer = mapper.readValue(jsonText, BookContainer::class.java)
     }
+
+
     private fun initSearchField() {
 
 
@@ -125,25 +132,25 @@ class BookFragment : Fragment() {
     }
 
     private fun displaySnackBarWithBottomMargin(
-        snackbar: Snackbar,
-        sideMargin: Int,
-        marginBottom: Int
+            snackbar: Snackbar,
+            sideMargin: Int,
+            marginBottom: Int
     ) {
         val snackBarView = snackbar.view
         val params = snackBarView.layoutParams as CoordinatorLayout.LayoutParams
         params.setMargins(
-            params.leftMargin + sideMargin,
-            params.topMargin,
-            params.rightMargin + sideMargin,
-            params.bottomMargin + marginBottom
+                params.leftMargin + sideMargin,
+                params.topMargin,
+                params.rightMargin + sideMargin,
+                params.bottomMargin + marginBottom
         )
         snackBarView.layoutParams = params
         snackbar.show()
     }
 
     private fun enableSwipeToDeleteAndUndo() {
-        val swipeToDelete: SwipeToDelete = object : SwipeToDelete(
-            requireContext()
+        val swipeToDeleteCallback: SwipeToDelete = object : SwipeToDelete(
+                requireContext()
         ) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, i: Int) {
                 try {
@@ -153,11 +160,11 @@ class BookFragment : Fragment() {
                     adapter.removeItem(position)
                     bookContainer.search.removeAt(position)
                     val snackbar: Snackbar = Snackbar
-                        .make(
-                            view,
-                            "Book was deleted!",
-                            Snackbar.LENGTH_LONG
-                        )
+                            .make(
+                                    view,
+                                    "Book was deleted!",
+                                    Snackbar.LENGTH_LONG
+                            )
                     snackbar.setAction("Undo", View.OnClickListener {
                         adapter.restoreItem(item, position)
                         bookContainer.search.add(position, suppData)
@@ -169,7 +176,7 @@ class BookFragment : Fragment() {
                 }
             }
         }
-        val itemTouchhelper = ItemTouchHelper(swipeToDelete)
+        val itemTouchhelper = ItemTouchHelper(swipeToDeleteCallback)
         itemTouchhelper.attachToRecyclerView(view.findViewById<RecyclerView>(R.id.list))
     }
 
@@ -182,4 +189,5 @@ class BookFragment : Fragment() {
             -1
         }
     }
+
 }

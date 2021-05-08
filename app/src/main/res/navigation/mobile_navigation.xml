@@ -23,4 +23,10 @@
         android:label="@string/title_books"
         tools:layout="@layout/fragment_book" />
 
+    <fragment
+        android:id="@+id/navigation_picture"
+        android:name="com.example.uakpicomsysio8101.ui.photo.PhotoFragment"
+        android:label="@string/title_photos"
+        tools:layout="@layout/fragment_photo_list" />
+
 </navigation>

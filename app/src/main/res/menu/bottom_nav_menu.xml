@@ -16,4 +16,9 @@
         android:icon="@drawable/baseline_book_24"
         android:title="@string/title_books" />
 
+    <item
+        android:id="@+id/navigation_picture"
+        android:icon="@drawable/twotone_photo_album_24"
+        android:title="@string/title_photos" />
+
 </menu>

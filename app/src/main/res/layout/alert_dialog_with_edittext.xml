@@ -8,27 +8,27 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
-
+        android:layout_margin="20dp"
+        android:background= "#ffffff"
+        android:textColorHint="#a9a9a9"
         android:hint="Title"/>
 
     <EditText
         android:id="@+id/subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
+        android:layout_margin="20dp"
+        android:background= "#ffffff"
+        android:textColorHint="#a9a9a9"
         android:hint="Subtitle"/>
 
     <EditText
         android:id="@+id/price"
-        android:inputType="numberDecimal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
-
+        android:layout_margin="20dp"
+        android:background= "#ffffff"
+        android:textColorHint="#a9a9a9"
         android:hint="Price"/>
 
 
