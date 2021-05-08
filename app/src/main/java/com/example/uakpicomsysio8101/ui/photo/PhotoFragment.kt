@@ -41,7 +41,7 @@ class PhotoFragment : Fragment() {
         list = requireView().findViewById(R.id.pictures)
         val spannedGridLayoutManager = SpannedGridLayoutManager(
                 SpannedGridLayoutManager.Orientation.VERTICAL,
-                3
+                4
         )
         spannedGridLayoutManager.itemOrderIsStable = true
 
@@ -51,8 +51,8 @@ class PhotoFragment : Fragment() {
 
         spannedGridLayoutManager.spanSizeLookup =
                 SpannedGridLayoutManager.SpanSizeLookup { position ->
-                    if (position % 9 == 4 ) {
-                        SpanSize(2, 2)
+                    if (position % 8 == 1 ) {
+                        SpanSize(3, 3)
                     } else {
                         SpanSize(1, 1)
                     }
