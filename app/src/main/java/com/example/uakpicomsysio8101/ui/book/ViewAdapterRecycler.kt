@@ -1,12 +1,22 @@
 package com.example.uakpicomsysio8101.ui.book
 
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import java.io.IOException
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import com.example.uakpicomsysio8101.R
 
 class ViewAdapterRecycler(
@@ -26,20 +36,7 @@ class ViewAdapterRecycler(
         holder.title.text = item.title + "\n"
         holder.subtitle.text = item.subtitle + "\n"
         holder.price.text = item.price + "\n"
-        if (item.image != null && item.image!!.isNotEmpty()) {
-            val drawable = context.resources.getIdentifier(
-                    item.image!!.replace(".png", ""), "drawable",
-                    context.packageName
-            )
-
-            holder.image.setImageDrawable(
-                    context.resources.getDrawable(drawable)
-            )
-        } else {
-            holder.image.setImageDrawable(
-                    context.resources.getDrawable(android.R.color.transparent)
-            )
-        }
+        Glide.with(context).load(item.image).into(holder.image)
         holder.itemView.setOnClickListener { listener(item) }
     }
 

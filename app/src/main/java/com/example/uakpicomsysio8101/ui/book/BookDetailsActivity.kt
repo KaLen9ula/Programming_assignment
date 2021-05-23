@@ -2,8 +2,7 @@ package com.example.uakpicomsysio8101.ui.book
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.textclassifier.TextLanguage
-import android.widget.Button
+import com.bumptech.glide.Glide
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.uakpicomsysio8101.R
@@ -36,9 +35,7 @@ class BookDetailsActivity : AppCompatActivity() {
         val jsonText = intent.extras!!["info"].toString()
         info = mapper.readValue(jsonText,BookNewJson::class.java)
         image = findViewById(R.id.image)
-        val drawable = getResId(info.image!!.replace(".jpg", ""), R.drawable::class.java)
-        if (drawable != -1)
-            image.setImageDrawable(this.resources.getDrawable(drawable))
+        Glide.with(this).load(info.image).into(image)
 
         year = findViewById(R.id.year)
         year.text = year.text.toString() +  " "  + info.year

@@ -1,8 +1,16 @@
 package com.example.uakpicomsysio8101.ui.book
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class BookNewJson {
+
+    @JsonProperty("error")
+    var error: String? = null
+
+    @JsonProperty("language")
+    var language: String? = null
 
     @JsonProperty("title")
     var title: String? = null
@@ -18,6 +26,9 @@ class BookNewJson {
 
     @JsonProperty("isbn13")
     var isbn13: String? = null
+
+    @JsonProperty("isbn10")
+    var isbn10: String? = null
 
     @JsonProperty("pages")
     var pages: String? = null
@@ -36,4 +47,7 @@ class BookNewJson {
 
     @JsonProperty("image")
     var image: String? = null
+
+    @JsonProperty("url")
+    var url: String? = null
 }

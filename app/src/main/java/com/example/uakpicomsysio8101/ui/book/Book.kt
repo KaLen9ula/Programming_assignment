@@ -1,7 +1,9 @@
 package com.example.uakpicomsysio8101.ui.book
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class Book {
 
     @JsonProperty("title")
@@ -18,7 +20,11 @@ class Book {
 
     @JsonProperty("image")
     var image: String? = null
+
+    @JsonProperty("url")
+    var url: String? = null
+
     override fun toString(): String {
-        return "Book(title=$title, subtitle=$subtitle, isbn13=$isbn13, price=$price, image=$image)"
+        return "Book(title=$title, subtitle=$subtitle, isbn13=$isbn13, price=$price, image=$image, url=${url})"
     }
 }
