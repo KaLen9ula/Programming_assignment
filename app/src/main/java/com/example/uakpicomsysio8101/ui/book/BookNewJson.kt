@@ -48,6 +48,9 @@ class BookNewJson {
     @JsonProperty("image")
     var image: String? = null
 
+    @JsonProperty("pdf")
+    var pdf: Map<String,String>? = null
+
     @JsonProperty("url")
     var url: String? = null
 }
