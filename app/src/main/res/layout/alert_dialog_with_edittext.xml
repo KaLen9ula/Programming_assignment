@@ -8,8 +8,8 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
+        android:background= "#ffffff"
+        android:textColorHint="#A9A9A9"
 
         android:hint="Title"/>
 
@@ -17,8 +17,8 @@
         android:id="@+id/subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
+        android:background= "#ffffff"
+        android:textColorHint="#A9A9A9"
         android:hint="Subtitle"/>
 
     <EditText
@@ -26,8 +26,8 @@
         android:inputType="numberDecimal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background= "#800080"
-        android:textColorHint="#808000"
+        android:background= "#ffffff"
+        android:textColorHint="#A9A9A9"
 
         android:hint="Price"/>
 
