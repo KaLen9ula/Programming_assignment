@@ -40,7 +40,9 @@ class ViewAdapterRecycler(
                     context.resources.getDrawable(android.R.color.transparent)
             )
         }
-        holder.itemView.setOnClickListener { listener(item) }
+        if (position != 0) {
+            holder.itemView.setOnClickListener { listener(item) }
+        }
     }
 
     override fun getItemCount(): Int = values.size
