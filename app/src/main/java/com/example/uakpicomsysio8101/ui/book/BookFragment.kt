@@ -2,6 +2,8 @@ package com.example.uakpicomsysio8101.ui.book
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -10,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -17,13 +20,16 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import com.fasterxml.jackson.annotation.JsonProperty
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.uakpicomsysio8101.R
+import kotlinx.coroutines.runBlocking
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.material.snackbar.Snackbar
 import java.lang.reflect.Field
@@ -37,6 +43,9 @@ class BookFragment : Fragment() {
     private lateinit var adapter: ViewAdapterRecycler
     private lateinit var searchField: EditText
     private lateinit var addButton: Button
+
+    private lateinit var dao: BookDAO
+    private lateinit var dbHelper: BookDBHelper
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +65,8 @@ class BookFragment : Fragment() {
                 else -> GridLayoutManager(context, columnCount)
             }
         }
+        dbHelper = BookDBHelper(requireActivity())
+        dao = BookDBHelper.instance.getBookDAO()
 
         initSearchField()
         val arr = bookContainer.search
@@ -92,8 +103,7 @@ class BookFragment : Fragment() {
     }
 
 
-    private fun initBook(books: List<Book>) {
-        val mapper = ObjectMapper()
+    private fun initBook(books: List<Book>, query: String) {
         bookContainer.search = books.toMutableList()
         adapter = ViewAdapterRecycler(requireContext(), books) {
             val client = OkHttpClient()
@@ -126,31 +136,78 @@ class BookFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable) {
                 if (s.toString().length > 2) {
-                    val client = OkHttpClient()
-                    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                    val gistJsonAdapter = moshi.adapter(BookAdapter::class.java)
-                    val request = Request.Builder()
-                            .url("https://api.itbook.store/1.0/search/${s.toString()}")
-                            .build()
+                    if (runBlocking { dao.getByQuery(s.toString()).isEmpty()}) {
+                        try {
+                            downloadData(s.toString())
+                        } catch (e: java.lang.Exception) {
+                            println(e.message)
+                            Toast.makeText(
+                                requireContext(),
+                                "No internet connection and database is empty!",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
 
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-
-                        /*for ((name, value) in response.headers) {
-                            println("$name: $value")
-                        }*/
-
-                        //println(response.body!!.string())
-                        val gist = gistJsonAdapter.fromJson(response.body!!.source())
-                        initBook(gist!!.books)
-                        println(gist)
-
-
+                    } else {
+                        val bookEntities = runBlocking { dao.getByQuery(s.toString()) }
+                        val arrOfBooks = fromBookEntityListToBookList(bookEntities)
+                        adapter = ViewAdapterRecycler(requireContext(), arrOfBooks) {
+                            val objectMapper = ObjectMapper()
+                            val entity = runBlocking { dao.getByISBN(it.isbn13!!.replace("a", "")) }
+                            val json = objectMapper.writeValueAsString(fromBookEntityToDetails(entity))
+                            val intent = Intent(requireContext(), BookDetailsActivity::class.java)
+                            intent.putExtra("info", json)
+                            startActivity(intent)
+                        }
+                        view.findViewById<RecyclerView>(R.id.list).adapter = adapter
                     }
                 }
             }
         })
     }
+    private fun downloadData(url: String) {
+        val client = OkHttpClient()
+        val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+        val gistJsonAdapter = moshi.adapter(BookAdapter::class.java)
+
+        val request = Request.Builder()
+            .url("https://api.itbook.store/1.0/search/${url}")
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val gist = gistJsonAdapter.fromJson(response.body!!.source())
+            val arrOfBooks = ArrayList<BookEntity>()
+            gist!!.books.forEach {x -> arrOfBooks.add(fromBookToBookEntity(x))}
+            saveToDB(gist, url)
+            initBook(gist.books, url)
+        }
+    }
+
+    fun saveToDB(gist: BookAdapter, query: String) {
+        gist.books.forEach { x ->
+            run {
+                val client = OkHttpClient()
+                val request = Request.Builder()
+                    .url("https://api.itbook.store/1.0/books/${x.isbn13!!.replace("a", "")}")
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+
+                    val mapper = ObjectMapper()
+                    val jsonText = response.body!!.string()
+                    val details = mapper.readValue(jsonText, BookNewJson::class.java)
+                    val entity = fromDetailsToBookEntity(details)
+                    entity.query = query
+                    runBlocking { dao.upsertByReplacementBooks(listOf(entity)) }
+                    println("test " + runBlocking { dao.getAllBooks() })
+                }
+            }
+        }}
 
     fun filter(text: String) {
         val temp: MutableList<Book> = ArrayList()
@@ -209,6 +266,100 @@ class BookFragment : Fragment() {
         }
         val itemTouchhelper = ItemTouchHelper(swipeToDeleteCallback)
         itemTouchhelper.attachToRecyclerView(view.findViewById<RecyclerView>(R.id.list))
+    }
+
+    private fun fromBookEntityToBook(bookEntity: BookEntity): Book {
+        val book = Book()
+        book.run {
+            isbn13 = bookEntity.isbn13
+            image = bookEntity.image
+            url = bookEntity.url
+            price = bookEntity.price
+            title = bookEntity.title
+            subtitle = bookEntity.subtitle
+        }
+        return book
+    }
+
+    fun fromBookEntityListToBookList(listEntity: List<BookEntity>): List<Book> {
+        val books = ArrayList<Book>(listEntity.size)
+        listEntity.forEach { books.add(fromBookEntityToBook(it)) }
+        return books
+    }
+
+    private fun fromBookToBookEntity(book: Book): BookEntity {
+        val bookEntity = BookEntity()
+
+        bookEntity.run {
+            isbn13 = book.isbn13
+            image = bookEntity.image
+            url = book.url
+            price = book.price
+            title = book.title
+            subtitle = book.subtitle
+        }
+        return bookEntity
+    }
+
+    fun fromBookEntityToDetails(details: BookEntity): BookNewJson {
+        val bookEntity = BookNewJson()
+        bookEntity.run {
+            error = details.error
+            language = details.language
+            title = details.title
+            subtitle = details.subtitle
+            authors = details.authors
+            publisher = details.publisher
+            isbn13 = details.isbn13
+            isbn10 = details.isbn10
+            pages = details.pages
+            year = details.year
+            rating = details.rating
+            desc = details.desc
+            price = details.price
+            image = details.image
+            url = details.url
+        }
+        return bookEntity
+    }
+
+    fun fromDetailsToBookEntity(details: BookNewJson): BookEntity {
+        val bookEntity = BookEntity()
+        bookEntity.run {
+            error = details.error
+            language = details.language
+            title = details.title
+            subtitle = details.subtitle
+            authors = details.authors
+            publisher = details.publisher
+            isbn13 = details.isbn13
+            isbn10 = details.isbn10
+            pages = details.pages
+            year = details.year
+            rating = details.rating
+            desc = details.desc
+            price = details.price
+            image = details.image
+            url = details.url
+        }
+        return bookEntity
+    }
+
+    fun fromBookListToBookEntityList(listEntity: List<Book>): List<BookEntity> {
+        val entities = ArrayList<BookEntity>(listEntity.size)
+        listEntity.forEach { entities.add(fromBookToBookEntity(it)) }
+        return entities
+    }
+
+    private fun getBytesFromImageMethod(bitmap: Bitmap): ByteArray {
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+        val image = stream.toByteArray()
+        return image
+    }
+
+    private fun loadImageFromBytes(imageData: ByteArray): Bitmap {
+        return BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
     }
 
     fun getResId(resName: String, c: Class<*>): Int {
